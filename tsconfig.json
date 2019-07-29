@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "outDir": "dist",
+    "moduleResolution": "node",
+    "declaration": true,
+    "sourceMap": true,
+    "lib": ["es5", "es6"],
+    "plugins": [
+      { "name": "typescript-tslint-plugin" }
+    ]
+  },
+  "filesGlob": [
+    "./src/**/*.ts"
+  ],
+	"exclude": [
+    "coverage",
+    "dist",
+    "node_modules",
+    "serverless",
+    ".webpack",
+    "ts-node**"
+  ],
+}

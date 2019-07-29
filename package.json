@@ -1,0 +1,37 @@
+{
+  "name": "api-tools",
+  "version": "0.0.1",
+  "description": "Provides a universal set of standardized tools for building node webservices",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": "https://github.com/benningerb/api-tools.git",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "yarn clean && yarn build:parser && tsc -p . && yarn lint",
+    "build:parser": "pegjs -o src/lib/odata-parser.js src/lib/odata.pegjs",
+    "lint": "tslint \"**/*.ts\" --project .",
+    "test": "jest",
+    "pretest": "yarn build:parser",
+    "watch": "tsc -w -p .",
+    "pre-commit": "yarn build && yarn test"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn pre-commit"
+    }
+  },
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^24.0.15",
+    "husky": "^3.0.2",
+    "jest": "^24.8.0",
+    "pegjs": "^0.10.0",
+    "rimraf": "^2.6.3",
+    "ts-jest": "^24.0.2",
+    "tslint": "^5.18.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.5.3",
+    "typescript-tslint-plugin": "^0.5.4"
+  }
+}
