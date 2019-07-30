@@ -32,7 +32,7 @@
     "no-non-null-assertion": true,
     "no-reference": true,
     "no-unnecessary-type-assertion": true,
-    "no-var-requires": true,
+    "no-var-requires": false,
     "one-variable-per-declaration": false,
     "only-arrow-functions": false,
     "object-literal-shorthand": false,

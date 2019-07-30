@@ -14,12 +14,11 @@
   "filesGlob": [
     "./src/**/*.ts"
   ],
-	"exclude": [
+  "exclude": [
     "coverage",
     "dist",
     "node_modules",
-    "serverless",
     ".webpack",
     "ts-node**"
-  ],
+  ]
 }
