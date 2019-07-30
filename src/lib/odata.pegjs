@@ -191,34 +191,35 @@ identifier                  =   a:identifierPart list:("." i:identifier {return 
 
 // callback
 callback                    =   "$callback=" a:identifier { return { '$callback': a }; }
+                            /   "$callback=" .* { return {"error": 'invalid $callback parameter'}; }
 
 // $top
 top                         =   "$top=" a:INT { return { '$top': ~~a }; }
                             /   "$top=" .* { return {"error": 'invalid $top parameter'}; }
 
-// // $expand
-// expand                      =   "$expand=" list:expandList { return { "$expand": list }; }
-//                             /   "$expand=" .* { return {"error": 'invalid $expand parameter'}; }
-// 
-// expandList                  =   i:identifierPath list:("," WSP? l:expandList {return l;})? {
-//                                     if (list === "" || list == null) list = [];
-//                                     if (Array.isArray(list[0])) {
-//                                         list = list[0];
-//                                     }
-//                                     list.unshift(i);
-//                                     return list;
-//                                 }
+// $expand
+expand                      =   "$expand=" list:expandList { return { "$expand": list }; }
+                            /   "$expand=" .* { return {"error": 'invalid $expand parameter'}; }
+
+expandList                  =   i:identifierPath list:("," WSP? l:expandList {return l;})? {
+                                    if (list === "" || list == null) list = [];
+                                    if (Array.isArray(list[0])) {
+                                        list = list[0];
+                                    }
+                                    list.unshift(i);
+                                    return list;
+                                }
 
 //$skip
 skip                        =   "$skip=" a:INT {return {'$skip': ~~a }; }
                             /   "$skip=" .* { return {"error": 'invalid $skip parameter'}; }
 
 //$format
-format                      =   "$format=" v:.+ { return {'$format': v.join('') }; }
+format                      =   "$format=" v:("json"/"xml") { return {'$format': v }; }
                             /   "$format=" .* { return {"error": 'invalid $format parameter'}; }
                             
 //$count
-inlinecount                 =   "$count=" v:boolean { return {'$count': v }; }
+count                       =   "$count=" v:boolean { return {'$count': v }; }
                             /   "$count=" .* { return {"error": 'invalid $count parameter'}; }
 
 //$maxpagesize
@@ -227,8 +228,8 @@ maxpagesize                 =   "$maxpagesize=" a:INT {return {'$maxpagesize': ~
 
 // $orderby
 orderby                     =   "$orderby="i list:orderbyList {
-                                    return { "$orderBy": list }; }
-                            /   "$orderby=" .* { return {"error": 'invalid $orderBy parameter'}; }
+                                    return { "$orderby": list }; }
+                            /   "$orderby="i .* { return {"error": 'invalid $orderby parameter'}; }
 
 orderbyList                 =   i:(id:identifier ord:(WSP ("asc"/"desc"))? {
                                     if (ord == null) ord = [];
@@ -279,92 +280,101 @@ filter                      =   "$filter=" list:filterExpr {
                                 }
                             /   "$filter=" .* { return {"error": 'invalid $filter parameter'}; }
 
-filterExpr                  =   left:("(" WSP? filter:filterExpr WSP? ")"{return filter}) right:( WSP type:("and"/"or") WSP value:filterExpr{
-                                    return { type: type, value: value}
+filterExpr                  =   left:(type:"not" WSP "(" WSP? filter:filterExpr WSP? ")" {
+	        						return { type: type, value: filter }
+								}) right:( WSP type:("and"/"or") WSP value:filterExpr {
+                                    return { type: type, value: value }
                                 })? {
                                     return filterExprHelper(left, right);
                                 }
-                            /   left:(type:unaryOp WSP filter:filterExpr{
+                            /   left:("(" WSP? filter:filterExpr WSP? ")" {
+	        						return filter
+								}) right:( WSP type:("and"/"or") WSP value:filterExpr {
+                                    return { type: type, value: value }
+                                })? {
+                                    return filterExprHelper(left, right);
+                                }
+                            /   left:(type:"not" WSP filter:filterExpr {
                                     return { type: type, value: filter }
-                                }) right:( WSP type:("and"/"or") WSP value:filterExpr{
-                                    return { type: type, value: value}
+                                }) right:( WSP type:("and"/"or") WSP value:filterExpr {
+                                    return { type: type, value: value }
                                 })? {
                                     return filterExprHelper(left, right);
                                 }
-                            /   left:cond right:( WSP type:("and"/"or") WSP value:filterExpr{
-                                    return { type: type, value: value}
+                            /   left:cond right:( WSP type:("and"/"or") WSP value:filterExpr {
+                                    return { type: type, value: value }
                                 })? {
                                     return filterExprHelper(left, right);
                                 }
 
-// booleanFunctions2Args       =   "substringof"
-//                             /   "endswith"
-//                             /   "startswith"
-//                             /   "IsOf"
+booleanFunctions2Args       =   "substringof"
+                            /   "endswith"
+                            /   "startswith"
+                            /   "IsOf"
 
-// booleanFunc                 =   f:booleanFunctions2Args "(" arg0:part "," WSP? arg1:part ")" {
-//                                     return {
-//                                         type: "functioncall",
-//                                         func: f,
-//                                         args: [arg0, arg1]
-//                                     }
-//                                 }
-//                             /   "IsOf(" arg0:part ")" {
-//                                     return {
-//                                         type: "functioncall",
-//                                         func: "IsOf",
-//                                         args: [arg0]
-//                                     }
-//                                 }
+booleanFunc                 =   f:booleanFunctions2Args "(" arg0:part "," WSP? arg1:part ")" {
+                                    return {
+                                        type: "functioncall",
+                                        func: f,
+                                        args: [arg0, arg1]
+                                    }
+                                }
+                            /   "IsOf(" arg0:part ")" {
+                                    return {
+                                        type: "functioncall",
+                                        func: "IsOf",
+                                        args: [arg0]
+                                    }
+                                }
 
-// otherFunctions1Arg          =   "tolower"
-//                             /   "toupper"
-//                             /   "trim"
-//                             /   "length"
-//                             /   "year"
-//                             /   "month"
-//                             /   "day"
-//                             /   "hour"
-//                             /   "minute"
-//                             /   "second"
-//                             /   "round"
-//                             /   "floor"
-//                             /   "ceiling"
+otherFunctions1Arg          =   "tolower"
+                            /   "toupper"
+                            /   "trim"
+                            /   "length"
+                            /   "year"
+                            /   "month"
+                            /   "day"
+                            /   "hour"
+                            /   "minute"
+                            /   "second"
+                            /   "round"
+                            /   "floor"
+                            /   "ceiling"
 
-// otherFunc1                  =   f:otherFunctions1Arg "(" arg0:part ")" {
-//                                     return {
-//                                         type: "functioncall",
-//                                         func: f,
-//                                         args: [arg0]
-//                                     }
-//                                 }
+otherFunc1                  =   f:otherFunctions1Arg "(" arg0:part ")" {
+                                    return {
+                                        type: "functioncall",
+                                        func: f,
+                                        args: [arg0]
+                                    }
+                                }
 
-// otherFunctions2Arg          =   "indexof"
-//                             /   "concat"
-//                             /   "substring"
-//                             /   "replace"
+otherFunctions2Arg          =   "indexof"
+                            /   "concat"
+                            /   "substring"
+                            /   "replace"
 
-// otherFunc2                  =   f:otherFunctions2Arg "(" arg0:part "," WSP? arg1:part ")" {
-//                                     return {
-//                                         type: "functioncall",
-//                                         func: f,
-//                                         args: [arg0, arg1]
-//                                     }
-//                                 }
-//                             /   "substring" "(" arg0:part "," WSP? arg1:part "," WSP? arg2:part ")" {
-//                                     return {
-//                                         type: "functioncall",
-//                                         func: "substring",
-//                                         args: [arg0, arg1, arg2]
-//                                     }
-//                                 }
-//                             /   "replace" "(" arg0:part "," WSP? arg1:part "," WSP? arg2:part ")" {
-//                                     return {
-//                                         type: "functioncall",
-//                                         func: "replace",
-//                                         args: [arg0, arg1, arg2]
-//                                     }
-//                                 }
+otherFunc2                  =   f:otherFunctions2Arg "(" arg0:part "," WSP? arg1:part ")" {
+                                    return {
+                                        type: "functioncall",
+                                        func: f,
+                                        args: [arg0, arg1]
+                                    }
+                                }
+                            /   "substring" "(" arg0:part "," WSP? arg1:part "," WSP? arg2:part ")" {
+                                    return {
+                                        type: "functioncall",
+                                        func: "substring",
+                                        args: [arg0, arg1, arg2]
+                                    }
+                                }
+                            /   "replace" "(" arg0:part "," WSP? arg1:part "," WSP? arg2:part ")" {
+                                    return {
+                                        type: "functioncall",
+                                        func: "replace",
+                                        args: [arg0, arg1, arg2]
+                                    }
+                                }
 
 cond                        =   a:part WSP op:op WSP b:part {
                                     return {
@@ -373,13 +383,12 @@ cond                        =   a:part WSP op:op WSP b:part {
                                         right: b
                                     };
                                 }
-                            
-//                             / booleanFunc
+                            /   booleanFunc
 
-// part                        =   booleanFunc
-//                             /   otherFunc2
-//                             /   otherFunc1
-part                        =   l:primitiveLiteral {
+part                        =   booleanFunc
+                            /   otherFunc2
+                            /   otherFunc1
+                            /   l:primitiveLiteral {
                                     return {
                                         type: 'literal',
                                         value: l
@@ -403,11 +412,9 @@ op                          =   "eq"
                             /   "div"
                             /   "mod"
 
-unaryOp                     =   "not"
+unsupported                 =   "$" er:[^&]+ { return { error: "unsupported method: $" + er.join('') }; }
 
-unsupported                 =   "$" er:.* { return { error: "unsupported method: " + er }; }
-
-passthrough                 =   x:.* { return ''; }
+passthrough                 =   p:[^&]+ { return { passthrough: p.join('') }; }
 
 //end: OData query options
 
@@ -415,18 +422,18 @@ passthrough                 =   x:.* { return ''; }
  * OData query
  */
 
-expList                     =   e:exp "&" el:expList { return [e].concat(el); }
-                            /   e:exp { return [e]; }
+expList                     =   e:exp "&" el:expList { return [e].concat(el).filter(Boolean); }
+                            /   e:exp { return [e].filter(Boolean); }
 
 
-// exp                         =   expand
 exp                         =   filter
                             /   orderby
                             /   skip
                             /   top
                             /   format
-                            /   inlinecount
+                            /   count
                             /   select
+							/   expand
                             /   callback
                             /   maxpagesize
                             /   unsupported
@@ -440,6 +447,7 @@ query                       =   list:expList {
                                     for(var i in list){
                                         if (list[i] !== "") {
                                             var paramName = Object.keys(list[i])[0]; //ie: $top
+											if (paramName === 'passthrough') continue;
                                             result[paramName] = list[i][paramName];
                                         }
                                     }
