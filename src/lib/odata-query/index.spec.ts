@@ -1,4 +1,4 @@
-import { parse } from './';
+import { parse } from '.';
 
 describe('parser', () => {
 	describe('passthrough', () => {

@@ -65,4 +65,4 @@ typings/
 .next
 
 # Generated parsers
-src/lib/*-parser.js
+src/lib/**/*-parser.js

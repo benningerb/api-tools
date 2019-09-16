@@ -7,11 +7,11 @@
   "repository": "https://github.com/benningerb/api-tools.git",
   "scripts": {
     "clean": "rimraf dist",
-    "build": "yarn clean && yarn build:parser && tsc -p . && yarn lint",
-    "build:parser": "pegjs -o src/lib/odata-parser.js src/lib/odata.pegjs",
+    "build": "yarn clean && yarn build:parsers && tsc -p . && yarn lint",
+    "build:parsers": "for f in $(find ./src/lib -type f -name '*.pegjs'); do pegjs --optimize speed --format commonjs -o \"$(dirname $f)/$(basename $f | sed 's/\\.pegjs$//')-parser.js\" $f; done",
     "lint": "tslint \"**/*.ts\" --project .",
     "test": "jest",
-    "pretest": "yarn build:parser",
+    "pretest": "yarn build:parsers",
     "watch": "tsc -w -p .",
     "pre-commit": "yarn build && yarn test"
   },
