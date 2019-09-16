@@ -1,0 +1,19 @@
+{
+  "swagger": {
+    "outputDirectory": "./dist",
+    "entryFile": "./src/server.ts",
+    "basePath": "/api",
+    "yaml": true,
+    "specVersion": 3
+  },
+  "routes": {
+    "basePath": "/api",
+    "entryFile": "./src/server.ts",
+    "routesDir": "./src",
+    "middleware": "koa",
+    "authenticationModule": ""
+  },
+  "ignore": [
+    "**/node_modules/**"
+  ]
+}
