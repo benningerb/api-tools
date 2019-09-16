@@ -34,5 +34,5 @@ export interface IODataQuery {
     $select: string[] | IParserError;
     $skip: number | IParserError;
     $top: number | IParserError;
-    [$unsupported: string]: any;
+    [$unsupported: string]: unknown;
 }
