@@ -4,7 +4,8 @@ import { decodeAccessToken, IAccessTokenDecoded } from '../services/idm';
 import { IHaveToken } from './authorization';
 import { IMinimalKoaCtx } from './minimalKoaCtx';
 import { IHaveCorrelationId } from './requestId';
-import { envVars, log } from '../config';
+import { envVars } from '../config/env';
+import { defaultLogger as logger } from '../utils/logger';
 
 const CLIENT_WHITELIST = [
     'myConsumerLocal',
@@ -35,7 +36,7 @@ export const evaluateAuthenticatedContext = async <T extends IMinimalKoaCtx & IH
         // sometimes flid will be null (e.g. when the user is deactivated)
         const decodedToken = await decodeAccessToken(token, ctx.correlationId);
         if (!isClientAllowed(decodedToken.client_id)) {
-            log.error({ token }, 'ensureAuthenticated error. No sub and not client credential.');
+            logger.error({ token }, 'ensureAuthenticated error. No sub and not client credential.');
             throw Boom.badRequest('Unauthorized!');
         }
 
@@ -44,7 +45,7 @@ export const evaluateAuthenticatedContext = async <T extends IMinimalKoaCtx & IH
         });
     } catch (err) {
         const e = err as Error;
-        log.error({ error: e.message, token }, 'ensureAuthenticated error. Decoding token');
+        logger.error({ error: e.message, token }, 'ensureAuthenticated error. Decoding token');
         throw Boom.unauthorized(e.message);
     }
 };

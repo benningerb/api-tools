@@ -5,7 +5,7 @@ import { IRequestOptions } from './IRequestOptions';
 import { firstOrNull } from './genericTypes';
 import util from 'util';
 import { assertUnreachable } from './assertUnreachable';
-import { log } from '../config';
+import { defaultLogger as logger } from '../utils/logger';
 
 interface ISimpleErrorString {
     error: string;
@@ -184,7 +184,7 @@ function translateResponseToErrorMessage(
     if (!responseData) {
         return 'No error message specified by the downstream server';
     } else if (typeof responseData === 'string') {
-        log.warn("If you're getting a string back from the server, it's likely that you concatenated a bad url.");
+        logger.warn("If you're getting a string back from the server, it's likely that you concatenated a bad url.");
         return responseData;
     } else if (isISimpleErrorString(responseData)) {
         return responseData.error;
@@ -203,7 +203,7 @@ function translateResponseToErrorMessage(
     } else if (isManyFrontlineCentralError(responseData)) {
         return responseData.data.errors.map(x => x.Title).join(', Another Error: ');
     } else {
-        log.warn(`There's an error type that we're not handling. Let's add this: ${util.format(responseData)}`);
+        logger.warn(`There's an error type that we're not handling. Let's add this: ${util.format(responseData)}`);
         return assertUnreachable(
             responseData,
             `Status code of ${statusCode} but found unexpected error structure came back from ${urlThatWasUsed ||
@@ -228,11 +228,11 @@ export const defaultErrorHandler = (
         responseStatusCode = errResponse.status;
     } else {
         if (!urlThatWasUsed) {
-            log.warn(
+            logger.warn(
                 "The response didn't have a url. Please investigate since that might be the cause of the error occurring",
             );
         } else {
-            log.warn(
+            logger.warn(
                 "The server didn't provide a status code so we replaced it with 500 to prevent downstream issues." +
                 'You might have the wrong URL (that can often cause a no status code scenario ' +
                 'since Axios never hit a server that could even respond with a code). ' +

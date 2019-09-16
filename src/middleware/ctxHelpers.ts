@@ -1,7 +1,7 @@
 import util from 'util';
 import { Context } from 'koa';
 import { DeepReadonly } from 'utility-types';
-import { log } from '../config';
+import { defaultLogger as logger } from '../utils/logger';
 
 export const getHeaderValue = (
     context: DeepReadonly<Context>,
@@ -15,7 +15,7 @@ export const getHeaderValue = (
     if (typeof headerValue === 'string') {
         return headerValue;
     } else {
-        log.warn(
+        logger.warn(
             `unexpected value for ctx.headers.${headerKeyToGet}. The whole ctx.headers object: ${util.format(
                 context.headers,
             )}`,
@@ -34,7 +34,7 @@ export const getQueryValue = (
     if (typeof queryValue === 'string') {
         return queryValue;
     } else {
-        log.warn(
+        logger.warn(
             `unexpected value for ctx.query.${queryKeyToGet}. The whole ctx.query object: ${util.format(context.query)}`,
         );
         return undefined;
@@ -53,7 +53,7 @@ export const getStateValue = <T>(
     if (stateValue) {
         return stateValue;
     } else {
-        log.warn(
+        logger.warn(
             `unexpected value for ctx.state.${stateKeyToGet}. The whole ctx.state object: ${util.format(context.state)}`,
         );
         return undefined;

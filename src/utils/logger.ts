@@ -1,4 +1,5 @@
 import pino from 'pino';
+import { envVars } from '../config/env';
 
 interface IAvoidLog {
     /** We do this because Pino does not have a log method. See why at: https://github.com/pinojs/pino/issues/460#issuecomment-407718003 */
@@ -149,7 +150,7 @@ interface IPinoOptions {
     useRawConsoleLogger?: string | boolean | null;
 }
 
-export const logger = (opts: ILoggerOptions) => {
+export const getLogger = (opts: ILoggerOptions) => {
     const { appName, useRawConsoleLogger } = opts;
     const logLevel = returnLogLevelOrThrow(opts.logLevel);
     const prettyPrintOptions = (opts.prettyPrintLogs as unknown) as pino.LoggerOptions['prettyPrint'];
@@ -164,3 +165,10 @@ export const logger = (opts: ILoggerOptions) => {
 
     return pinoInstance;
 };
+
+export const defaultLogger = getLogger({
+    appName: envVars.get('APP_NAME'),
+    logLevel: envVars.get('LOG_LEVEL'),
+    prettyPrintLogs: envVars.getOptional('PRETTY_PRINT_LOGS'),
+    useRawConsoleLogger: envVars.getOptional('USE_RAW_CONSOLE_LOGGER'),
+});

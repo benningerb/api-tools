@@ -10,7 +10,7 @@
     "build": "yarn clean && yarn build:parsers && tsc -p . && yarn lint",
     "build:parsers": "for f in $(find ./src/lib -type f -name '*.pegjs'); do pegjs --optimize speed --format commonjs -o \"$(dirname $f)/$(basename $f | sed 's/\\.pegjs$//')-parser.js\" $f; done",
     "lint": "tslint \"**/*.ts\" --project .",
-    "test": "jest",
+    "test": "LOG_LEVEL=debug EXPOSE_STACK=true IDM_CLIENT_ID=mockClientId jest",
     "pretest": "yarn build:parsers",
     "watch": "tsc -w -p .",
     "pre-commit": "yarn build && yarn test"

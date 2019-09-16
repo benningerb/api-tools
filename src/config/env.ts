@@ -1,7 +1,6 @@
 import nconf from 'nconf';
 import path from 'path';
 import utilityTypes from 'utility-types';
-import { logger } from '../utils/logger';
 
 const rightSideDoesNotMatter =
     'Only the key name matters because it will become the union of string literals defined as IRequiredEnvName';
@@ -89,10 +88,3 @@ nconfCopy.getOptional = (envVarName: IRequiredEnvName | string) => {
 // Now that we've instantiated the variables into memory, lets expose nconf so devs can use those environment variables
 // tslint:disable-next-line:no-unsafe-any // Here's where we annotate the stricter type
 export const envVars: SaferNConf = nconfCopy;
-
-export const log = logger({
-    appName: envVars.get('APP_NAME'),
-    logLevel: envVars.get('LOG_LEVEL'),
-    prettyPrintLogs: envVars.getOptional('PRETTY_PRINT_LOGS'),
-    useRawConsoleLogger: envVars.getOptional('USE_RAW_CONSOLE_LOGGER'),
-})

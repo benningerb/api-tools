@@ -1,6 +1,7 @@
 import Axios from 'axios';
 import querystring from 'query-string';
-import { envVars, log } from '../config';
+import { envVars } from '../config/env';
+import { defaultLogger as logger } from '../utils/logger';
 import { defaultErrorHandler } from '../utils/httpErrorTranslators';
 
 export interface IAccessTokenDecoded {
@@ -26,7 +27,7 @@ export interface IAccessTokenDecoded {
  * Decode an access token
  */
 export const decodeAccessToken = async (accessToken: string, correlationId: string): Promise<IAccessTokenDecoded> => {
-    log.trace(
+    logger.trace(
         `About to hit the accesstokenvalidation endpoint with accessToken ${accessToken} and correlationId of ${correlationId}`,
     );
     const urlMinusBase = '/connect/accesstokenvalidation';
@@ -43,7 +44,7 @@ export const decodeAccessToken = async (accessToken: string, correlationId: stri
             url: urlMinusBase,
         });
     });
-    log.trace(response.data);
+    logger.trace(response.data);
     return response.data;
 };
 
@@ -73,7 +74,7 @@ export const getClientCredentialsToken = async (opts: {
 }): Promise<IAppToAppAccessToken> => {
     const urlMinusBase = '/connect/token';
     const fullUrl = `${envVars.get('ID_GATEWAY_URL')}${urlMinusBase}`;
-    log.trace(`About to hit the ${fullUrl} endpoint`);
+    logger.trace(`About to hit the ${fullUrl} endpoint`);
 
     const formEncodedBody = querystring.stringify(opts.bodyOfReq);
 
@@ -91,6 +92,6 @@ export const getClientCredentialsToken = async (opts: {
             url: urlMinusBase,
         });
     });
-    log.trace(response.data);
+    logger.trace(response.data);
     return response.data;
 };
