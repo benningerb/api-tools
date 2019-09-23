@@ -10,7 +10,7 @@ export interface IHaveDecodedToken {
     decodedToken: IAccessTokenDecoded;
 }
 
-export const evaluateAuthenticatedContext = (opts: { clientWhitelist: string[], logger?: ILogger }) => async <T extends IMinimalKoaCtx & IHaveToken & IHaveCorrelationId>(
+export const evaluateAuthenticatedContext = (opts: { clientWhitelist: string[], logger: ILogger }) => async <T extends IMinimalKoaCtx & IHaveToken & IHaveCorrelationId>(
     ctx: T,
 ): Promise<T & IHaveDecodedToken> => {
     // tslint:disable-next-line: no-unsafe-any

@@ -1,22 +1,28 @@
 import util from 'util';
 import { Context } from 'koa';
 import { DeepReadonly } from 'utility-types';
-import { defaultLogger as logger } from '..';
+import { ILogger } from '../utils/logger';
+
+export interface IGetterHelperOpts {
+    key: string;
+    caseSensitive?: boolean;
+    logger: ILogger;
+}
 
 export const getHeaderValue = (
     context: DeepReadonly<Context>,
-    headerKeyToGet: string,
-    caseSensitive: boolean = false,
+    opts: IGetterHelperOpts
 ): string | undefined => {
+    const { key, logger, caseSensitive = false } = opts;
     const headersAsRecord: Record<string, unknown> = (context.headers as Record<string, unknown>) || {};
     const headerValue = caseSensitive
-        ? headersAsRecord[headerKeyToGet]
-        : caseInsensitiveGetter(headersAsRecord, headerKeyToGet);
+        ? headersAsRecord[key]
+        : caseInsensitiveGetter(headersAsRecord, key);
     if (typeof headerValue === 'string') {
         return headerValue;
     } else {
         logger.warn(
-            `unexpected value for ctx.headers.${headerKeyToGet}. The whole ctx.headers object: ${util.format(
+            `unexpected value for ctx.headers.${key}. The whole ctx.headers object: ${util.format(
                 context.headers,
             )}`,
         );
@@ -26,16 +32,16 @@ export const getHeaderValue = (
 
 export const getQueryValue = (
     context: DeepReadonly<Context>,
-    queryKeyToGet: string,
-    caseSensitive: boolean = false,
+    opts: IGetterHelperOpts
 ): string | undefined => {
+    const { key, logger, caseSensitive = false } = opts;
     const queryAsRecord: Record<string, unknown> = (context.query as Record<string, unknown>) || {};
-    const queryValue = caseSensitive ? queryAsRecord[queryKeyToGet] : caseInsensitiveGetter(queryAsRecord, queryKeyToGet);
+    const queryValue = caseSensitive ? queryAsRecord[key] : caseInsensitiveGetter(queryAsRecord, key);
     if (typeof queryValue === 'string') {
         return queryValue;
     } else {
         logger.warn(
-            `unexpected value for ctx.query.${queryKeyToGet}. The whole ctx.query object: ${util.format(context.query)}`,
+            `unexpected value for ctx.query.${key}. The whole ctx.query object: ${util.format(context.query)}`,
         );
         return undefined;
     }
@@ -43,18 +49,18 @@ export const getQueryValue = (
 
 export const getStateValue = <T>(
     context: DeepReadonly<Context>,
-    stateKeyToGet: string,
-    caseSensitive: boolean = false,
+    opts: IGetterHelperOpts
 ): T | undefined => {
+    const { key, logger, caseSensitive = false } = opts;
     const stateAsRecord = (context.state as Record<string, T>) || {};
     const stateValue = caseSensitive
-        ? stateAsRecord[stateKeyToGet]
-        : caseInsensitiveGetter<Record<string, T>, string, T>(stateAsRecord, stateKeyToGet);
+        ? stateAsRecord[key]
+        : caseInsensitiveGetter<Record<string, T>, string, T>(stateAsRecord, key);
     if (stateValue) {
         return stateValue;
     } else {
         logger.warn(
-            `unexpected value for ctx.state.${stateKeyToGet}. The whole ctx.state object: ${util.format(context.state)}`,
+            `unexpected value for ctx.state.${key}. The whole ctx.state object: ${util.format(context.state)}`,
         );
         return undefined;
     }

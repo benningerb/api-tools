@@ -3,16 +3,23 @@ import { IHaveToken } from './authorization';
 import { IHaveDecodedToken } from './authentication';
 import { IMinimalKoaCtx } from '../helpers/minimalKoaCtx';
 import { IHaveCorrelationId } from './requestId';
+import { createLogger } from '../utils/logger';
 import * as idService from '../services/idm';
 import Boom from '@hapi/boom';
 
 describe('.evaluateAuthenticatedContext', () => {
+    const mockLogger = createLogger({
+        appName: 'MockAppName',
+        logLevel: 'info',
+        prettyPrintLogs: false,
+        useRawConsoleLogger: false,
+    });
     const spyOfDecodeAccessToken = jest.spyOn(idService, 'decodeAccessToken');
     const mockClientId = 'mockClientId';
     let evaluateAuthenticatedContextMiddleware: <T extends IMinimalKoaCtx & IHaveToken & IHaveCorrelationId>(ctx: T) => Promise<T & IHaveDecodedToken>;
 
     beforeEach(() => {
-        evaluateAuthenticatedContextMiddleware = evaluateAuthenticatedContext({ clientWhitelist: [mockClientId] });
+        evaluateAuthenticatedContextMiddleware = evaluateAuthenticatedContext({ clientWhitelist: [mockClientId], logger: mockLogger });
         spyOfDecodeAccessToken.mockReset();
     });
 

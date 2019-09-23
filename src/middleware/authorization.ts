@@ -1,25 +1,27 @@
 import Router from 'koa-router';
-import { getHeaderValue, getQueryValue } from '../helpers/ctxHelpers';
 import { Context } from 'koa';
 import Boom from '@hapi/boom';
+import { ILogger } from '../utils/logger';
+import { getHeaderValue, getQueryValue } from '../helpers/ctxHelpers';
 
 export interface IHaveToken {
     bearerToken: string;
 }
 
-export const ensureBearerToken = (): Router.IMiddleware => async (ctx, next) => {
+export const ensureBearerToken = (opts: { logger: ILogger }): Router.IMiddleware => async (ctx, next) => {
     if (ctx.method === 'OPTIONS') {
         await next();
     } else {
-        ctx = checkBearerTokenExists(ctx);
+        ctx = checkBearerTokenExists(ctx, opts);
         await next();
     }
 };
 
-export const checkBearerTokenExists = <T extends Context>(ctx: T): T & IHaveToken => {
-    const authorizationHeader = getHeaderValue(ctx, 'authorization');
+export const checkBearerTokenExists = <T extends Context>(ctx: T, opts: { logger: ILogger }): T & IHaveToken => {
+    const { logger } = opts;
+    const authorizationHeader = getHeaderValue(ctx, { key: 'authorization', logger });
     const queryKeyForToken = 'token';
-    const authorizationQueryParam = getQueryValue(ctx, queryKeyForToken);
+    const authorizationQueryParam = getQueryValue(ctx, { key: queryKeyForToken, logger });
     const generalUnauthorizedErr = Boom.unauthorized('Authorization bearer token not provided or in incorrect format');
 
     let tokenStr: string;

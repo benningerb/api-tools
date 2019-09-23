@@ -1,7 +1,7 @@
 import { evaluateAuthenticatedContext } from './middleware/authentication';
 import { ensureBearerToken } from './middleware/authorization';
 import { insertCorrelationId } from './middleware/requestId';
-import { getLogger } from './utils/logger';
+import { createLogger } from './utils/logger';
 
 interface IOptions {
     appName: string;
@@ -26,18 +26,13 @@ export default (options: IOptions) => {
         exposeStack = false,
     } = options;
 
-    const defaultLogger = getLogger({
-        appName,
-        logLevel,
-        prettyPrintLogs,
-        useRawConsoleLogger,
-    });
-
     return {
         config: {
             appName,
             hostUrl,
             logLevel,
+            prettyPrintLogs,
+            useRawConsoleLogger,
             exposeStack,
             idGatewayUrl,
             idmClientId,
@@ -48,8 +43,8 @@ export default (options: IOptions) => {
             insertCorrelationId,
         },
         util: {
-            getLogger,
-            defaultLogger,
+            logger: createLogger({ appName, logLevel, prettyPrintLogs, useRawConsoleLogger }),
+            createLogger,
         },
     };
 };

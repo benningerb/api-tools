@@ -8,6 +8,10 @@ interface IAvoidLog {
 
 export type ILogger = pino.Logger & IAvoidLog;
 
+export interface IHaveLogger {
+    logger: ILogger;
+}
+
 const possibleLevels: pino.Level[] = ['debug', 'error', 'fatal', 'info', 'trace', 'warn'];
 
 function isPinoLogLevel(test: string): test is pino.Level {
@@ -150,7 +154,7 @@ interface IPinoOptions {
     useRawConsoleLogger?: string | boolean | null;
 }
 
-export const getLogger = (opts: ILoggerOptions) => {
+export const createLogger = (opts: ILoggerOptions) => {
     const { appName, useRawConsoleLogger } = opts;
     const logLevel = returnLogLevelOrThrow(opts.logLevel);
     const prettyPrintOptions = (opts.prettyPrintLogs as unknown) as pino.LoggerOptions['prettyPrint'];
