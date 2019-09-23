@@ -136,7 +136,7 @@ function doNotUseLogOrYouWillBeFired(pleaseDontUseLog: never) {
     );
 }
 
-interface ILoggerOptions {
+export interface ILoggerOptions {
     appName: string;
     logLevel: string;
     prettyPrintLogs?: string | boolean | null;
@@ -165,10 +165,3 @@ export const getLogger = (opts: ILoggerOptions) => {
 
     return pinoInstance;
 };
-
-export const defaultLogger = getLogger({
-    appName: envVars.get('APP_NAME'),
-    logLevel: envVars.get('LOG_LEVEL'),
-    prettyPrintLogs: envVars.getOptional('PRETTY_PRINT_LOGS'),
-    useRawConsoleLogger: envVars.getOptional('USE_RAW_CONSOLE_LOGGER'),
-});

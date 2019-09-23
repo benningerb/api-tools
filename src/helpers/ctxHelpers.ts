@@ -1,7 +1,7 @@
 import util from 'util';
 import { Context } from 'koa';
 import { DeepReadonly } from 'utility-types';
-import { defaultLogger as logger } from '../utils/logger';
+import { defaultLogger as logger } from '..';
 
 export const getHeaderValue = (
     context: DeepReadonly<Context>,

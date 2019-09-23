@@ -1,3 +1,4 @@
+import Router from 'koa-router';
 import * as authorizationMiddleware from './authorization';
 import Boom from '@hapi/boom';
 import { envVars } from '../config/env';
@@ -6,12 +7,14 @@ import * as idService from '../services/idm';
 describe('.ensureBearerTokenMiddleware', () => {
     let ctx: any;
     const spyOfDecodeToken = jest.spyOn(idService, 'decodeAccessToken');
+    let ensureBearerTokenMiddleware: Router.IMiddleware;
 
     beforeEach(() => {
         ctx = {
             status: 200,
         } as any;
 
+        ensureBearerTokenMiddleware = authorizationMiddleware.ensureBearerToken();
         spyOfDecodeToken.mockReset();
     });
 
@@ -26,7 +29,7 @@ describe('.ensureBearerTokenMiddleware', () => {
         let errorToValidate: Error | null = null;
         try {
             const next = async () => 'middleware finished';
-            await authorizationMiddleware.ensureBearerTokenMiddleware(ctx, next);
+            await ensureBearerTokenMiddleware(ctx, next);
         } catch (err) {
             errorToValidate = err;
         }
@@ -46,7 +49,7 @@ describe('.ensureBearerTokenMiddleware', () => {
         let errorToValidate: Error | null = null;
         try {
             const next = async () => 'middleware finished';
-            await authorizationMiddleware.ensureBearerTokenMiddleware(ctx, next);
+            await ensureBearerTokenMiddleware(ctx, next);
         } catch (err) {
             errorToValidate = err;
         }
@@ -66,7 +69,7 @@ describe('.ensureBearerTokenMiddleware', () => {
         let errorToValidate: Error | null = null;
         try {
             const next = async () => 'middleware finished';
-            await authorizationMiddleware.ensureBearerTokenMiddleware(ctx, next);
+            await ensureBearerTokenMiddleware(ctx, next);
         } catch (err) {
             errorToValidate = err;
         }
@@ -93,7 +96,7 @@ describe('.ensureBearerTokenMiddleware', () => {
         let errorToValidate: Error | null = null;
         try {
             const next = async () => 'middleware finished';
-            await authorizationMiddleware.ensureBearerTokenMiddleware(ctx, next);
+            await ensureBearerTokenMiddleware(ctx, next);
         } catch (err) {
             errorToValidate = err;
         }
@@ -118,7 +121,7 @@ describe('.ensureBearerTokenMiddleware', () => {
         let errorToValidate: Error | null = null;
         try {
             const next = async () => 'middleware finished';
-            await authorizationMiddleware.ensureBearerTokenMiddleware(ctx, next);
+            await ensureBearerTokenMiddleware(ctx, next);
         } catch (err) {
             errorToValidate = err;
         }

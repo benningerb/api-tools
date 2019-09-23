@@ -1,7 +1,7 @@
 import Axios from 'axios';
 import querystring from 'query-string';
 import { envVars } from '../config/env';
-import { defaultLogger as logger } from '../utils/logger';
+import { ILogger } from '../utils/logger';
 import { defaultErrorHandler } from '../utils/httpErrorTranslators';
 
 export interface IAccessTokenDecoded {
@@ -26,7 +26,11 @@ export interface IAccessTokenDecoded {
 /**
  * Decode an access token
  */
-export const decodeAccessToken = async (accessToken: string, correlationId: string): Promise<IAccessTokenDecoded> => {
+export const decodeAccessToken = async (opts: { accessToken: string, correlationId: string, logger?: ILogger }): Promise<IAccessTokenDecoded> => {
+    // tslint:disable-next-line:no-console
+    const logger = opts.logger || console;
+    const { accessToken, correlationId } = opts;
+
     logger.trace(
         `About to hit the accesstokenvalidation endpoint with accessToken ${accessToken} and correlationId of ${correlationId}`,
     );
@@ -71,9 +75,14 @@ export interface IClientCredentialsTokenRequestInfo {
 export const getClientCredentialsToken = async (opts: {
     correlationId: string;
     bodyOfReq: IClientCredentialsTokenRequestInfo;
+    logger?: ILogger;
 }): Promise<IAppToAppAccessToken> => {
     const urlMinusBase = '/connect/token';
     const fullUrl = `${envVars.get('ID_GATEWAY_URL')}${urlMinusBase}`;
+
+    // tslint:disable-next-line:no-console
+    const logger = opts.logger || console;
+
     logger.trace(`About to hit the ${fullUrl} endpoint`);
 
     const formEncodedBody = querystring.stringify(opts.bodyOfReq);

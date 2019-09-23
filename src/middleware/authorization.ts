@@ -1,5 +1,5 @@
 import Router from 'koa-router';
-import { getHeaderValue, getQueryValue } from './ctxHelpers';
+import { getHeaderValue, getQueryValue } from '../helpers/ctxHelpers';
 import { Context } from 'koa';
 import Boom from '@hapi/boom';
 
@@ -7,7 +7,7 @@ export interface IHaveToken {
     bearerToken: string;
 }
 
-export const ensureBearerTokenMiddleware: Router.IMiddleware = async (ctx, next) => {
+export const ensureBearerToken = (): Router.IMiddleware => async (ctx, next) => {
     if (ctx.method === 'OPTIONS') {
         await next();
     } else {

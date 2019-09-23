@@ -1,11 +1,11 @@
 import Router from 'koa-router';
 import shortId from 'shortid';
-import { getHeaderValue } from './ctxHelpers';
+import { getHeaderValue } from '../helpers/ctxHelpers';
 import { Context } from 'koa';
 
 export const CORRELATION_ID_HEADER_KEY = 'x-fl-hop-correlationid';
 
-export const insertCorrelationId: Router.IMiddleware = async (ctx, next) => {
+export const insertCorrelationId = (): Router.IMiddleware => async (ctx, next) => {
     ctx = addCorrelationIdToCtx(ctx);
     await next();
 };

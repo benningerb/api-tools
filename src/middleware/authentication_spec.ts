@@ -1,26 +1,32 @@
 import { evaluateAuthenticatedContext } from './authentication';
-import { envVars } from '../config/env';
+import { IHaveToken } from './authorization';
+import { IHaveDecodedToken } from './authentication';
+import { IMinimalKoaCtx } from '../helpers/minimalKoaCtx';
+import { IHaveCorrelationId } from './requestId';
 import * as idService from '../services/idm';
 import Boom from '@hapi/boom';
 
 describe('.evaluateAuthenticatedContext', () => {
     const spyOfDecodeAccessToken = jest.spyOn(idService, 'decodeAccessToken');
+    const mockClientId = 'mockClientId';
+    let evaluateAuthenticatedContextMiddleware: <T extends IMinimalKoaCtx & IHaveToken & IHaveCorrelationId>(ctx: T) => Promise<T & IHaveDecodedToken>;
 
     beforeEach(() => {
+        evaluateAuthenticatedContextMiddleware = evaluateAuthenticatedContext({ clientWhitelist: [mockClientId] });
         spyOfDecodeAccessToken.mockReset();
     });
 
     it('should house the decoded token on the newly created ctx', async () => {
         // Arrange
         const expectedToken: idService.IAccessTokenDecoded = {
-            client_id: envVars.get('IDM_CLIENT_ID'),
+            client_id: mockClientId,
             flid: 'mockFlId1',
             sub: 'mockSubId1',
             access_token: 'mockAccessToken04j50jty50jy50j',
         };
         spyOfDecodeAccessToken.mockResolvedValue(expectedToken);
 
-        const newCtx = await evaluateAuthenticatedContext({
+        const newCtx = await evaluateAuthenticatedContextMiddleware({
             state: {
                 accessToken: 'mockAccessToken',
             },
@@ -29,6 +35,30 @@ describe('.evaluateAuthenticatedContext', () => {
         });
 
         expect(newCtx.decodedToken).toEqual(expectedToken);
+    });
+
+    it('should throw if the token is not found', async () => {
+        // Arrange
+        const expectedToken: idService.IAccessTokenDecoded = {
+            client_id: mockClientId,
+            flid: 'mockFlId1',
+            sub: 'mockSubId1',
+            access_token: 'mockAccessToken04j50jty50jy50j',
+        };
+        // ACT
+        let errorToValidate: Error | null = null;
+        try {
+            await evaluateAuthenticatedContextMiddleware({
+                state: {},
+                bearerToken: expectedToken.access_token,
+                correlationId: 'mockCorrelationId',
+            });
+        } catch (err) {
+            errorToValidate = err;
+        }
+
+        // Assert
+        expect(errorToValidate).toEqual(Boom.badRequest('No token found!'));
     });
 
     it('should throw if the token decode api rejects', async () => {
@@ -41,7 +71,7 @@ describe('.evaluateAuthenticatedContext', () => {
         // ACT
         let errorToValidate: Error | null = null;
         try {
-            await evaluateAuthenticatedContext({
+            await evaluateAuthenticatedContextMiddleware({
                 state: {
                     accessToken: 'mockAccessToken',
                 },

@@ -2,24 +2,15 @@ import Boom from '@hapi/boom';
 
 import { decodeAccessToken, IAccessTokenDecoded } from '../services/idm';
 import { IHaveToken } from './authorization';
-import { IMinimalKoaCtx } from './minimalKoaCtx';
+import { IMinimalKoaCtx } from '../helpers/minimalKoaCtx';
 import { IHaveCorrelationId } from './requestId';
-import { envVars } from '../config/env';
-import { defaultLogger as logger } from '../utils/logger';
+import { ILogger } from '../utils/logger';
 
-const CLIENT_WHITELIST = [
-    'myConsumerLocal',
-    'myConsumer',
-    envVars.get('IDM_CLIENT_ID'),
-    'superSuit',
-    'superSuit_awsqa',
-    'superSuit_awsstage',
-];
-
-interface IHaveDecodedToken {
+export interface IHaveDecodedToken {
     decodedToken: IAccessTokenDecoded;
 }
-export const evaluateAuthenticatedContext = async <T extends IMinimalKoaCtx & IHaveToken & IHaveCorrelationId>(
+
+export const evaluateAuthenticatedContext = (opts: { clientWhitelist: string[], logger?: ILogger }) => async <T extends IMinimalKoaCtx & IHaveToken & IHaveCorrelationId>(
     ctx: T,
 ): Promise<T & IHaveDecodedToken> => {
     // tslint:disable-next-line: no-unsafe-any
@@ -30,12 +21,19 @@ export const evaluateAuthenticatedContext = async <T extends IMinimalKoaCtx & IH
         throw Boom.badRequest('No token found!');
     }
 
+    // tslint:disable-next-line:no-console
+    const logger = opts.logger || console;
+
     try {
         // use sub aka subject from decoded token
         // --> learn more here: https://www.oauth.com/oauth2-servers/access-tokens/self-encoded-access-tokens/
         // sometimes flid will be null (e.g. when the user is deactivated)
-        const decodedToken = await decodeAccessToken(token, ctx.correlationId);
-        if (!isClientAllowed(decodedToken.client_id)) {
+        const decodedToken = await decodeAccessToken({
+            accessToken: token,
+            correlationId: ctx.correlationId,
+            logger: opts.logger
+        });
+        if (!opts.clientWhitelist.includes(decodedToken.client_id)) {
             logger.error({ token }, 'ensureAuthenticated error. No sub and not client credential.');
             throw Boom.badRequest('Unauthorized!');
         }
@@ -49,12 +47,3 @@ export const evaluateAuthenticatedContext = async <T extends IMinimalKoaCtx & IH
         throw Boom.unauthorized(e.message);
     }
 };
-
-/**
- * Returns true if provided clientId is found in client whitelist
- * @param {string} clientId
- * @returns {boolean}
- */
-export function isClientAllowed(clientId: string): boolean {
-    return CLIENT_WHITELIST.includes(clientId);
-}
