@@ -1,5 +1,5 @@
 import Router from 'koa-router';
-import { getHeaderValue, getQueryValue } from './ctxHelpers';
+import { getHeaderValue, getQueryValue } from '../helpers/context';
 import { Context } from 'koa';
 import Boom from '@hapi/boom';
 

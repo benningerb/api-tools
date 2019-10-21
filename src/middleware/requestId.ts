@@ -1,6 +1,6 @@
 import Router from 'koa-router';
 import shortId from 'shortid';
-import { getHeaderValue, setStateValue } from './ctxHelpers';
+import { getHeaderValue, setStateValue } from '../helpers/context';
 import { Context } from 'koa';
 
 // defaults

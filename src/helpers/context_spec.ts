@@ -1,4 +1,4 @@
-import { getHeaderValue, getQueryValue, getStateValue } from './ctxHelpers';
+import { getHeaderValue, getQueryValue, getStateValue } from './context';
 import { Context } from 'koa';
 
 describe('ctxHelpers', () => {
