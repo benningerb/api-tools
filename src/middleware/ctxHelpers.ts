@@ -1,79 +1,65 @@
-import util from 'util';
 import { Context } from 'koa';
 import { DeepReadonly } from 'utility-types';
-import { defaultLogger as logger } from '../utils/logger';
 
 export const getHeaderValue = (
-    context: DeepReadonly<Context>,
-    headerKeyToGet: string,
-    caseSensitive: boolean = false,
+	ctx: DeepReadonly<Context>,
+	headerKey: string,
+	caseSensitive: boolean = false,
 ): string | undefined => {
-    const headersAsRecord: Record<string, unknown> = (context.headers as Record<string, unknown>) || {};
-    const headerValue = caseSensitive
-        ? headersAsRecord[headerKeyToGet]
-        : caseInsensitiveGetter(headersAsRecord, headerKeyToGet);
-    if (typeof headerValue === 'string') {
-        return headerValue;
-    } else {
-        logger.warn(
-            `unexpected value for ctx.headers.${headerKeyToGet}. The whole ctx.headers object: ${util.format(
-                context.headers,
-            )}`,
-        );
-        return undefined;
-    }
+	const headersAsRecord: Record<string, unknown> = (ctx.headers as Record<string, unknown>) || {};
+	const headerValue = caseSensitive ? headersAsRecord[headerKey] : caseInsensitiveGetter(headersAsRecord, headerKey);
+
+	return typeof headerValue === 'string' ? headerValue : undefined;
 };
 
 export const getQueryValue = (
-    context: DeepReadonly<Context>,
-    queryKeyToGet: string,
-    caseSensitive: boolean = false,
+	ctx: DeepReadonly<Context>,
+	queryKey: string,
+	caseSensitive: boolean = false,
 ): string | undefined => {
-    const queryAsRecord: Record<string, unknown> = (context.query as Record<string, unknown>) || {};
-    const queryValue = caseSensitive ? queryAsRecord[queryKeyToGet] : caseInsensitiveGetter(queryAsRecord, queryKeyToGet);
-    if (typeof queryValue === 'string') {
-        return queryValue;
-    } else {
-        logger.warn(
-            `unexpected value for ctx.query.${queryKeyToGet}. The whole ctx.query object: ${util.format(context.query)}`,
-        );
-        return undefined;
-    }
+	const queryAsRecord: Record<string, unknown> = (ctx.query as Record<string, unknown>) || {};
+	const queryValue = caseSensitive ? queryAsRecord[queryKey] : caseInsensitiveGetter(queryAsRecord, queryKey);
+
+	return typeof queryValue === 'string' ? queryValue : undefined;
 };
 
 export const getStateValue = <T>(
-    context: DeepReadonly<Context>,
-    stateKeyToGet: string,
-    caseSensitive: boolean = false,
+	ctx: DeepReadonly<Context>,
+	stateKey: string,
+	caseSensitive: boolean = false,
 ): T | undefined => {
-    const stateAsRecord = (context.state as Record<string, T>) || {};
-    const stateValue = caseSensitive
-        ? stateAsRecord[stateKeyToGet]
-        : caseInsensitiveGetter<Record<string, T>, string, T>(stateAsRecord, stateKeyToGet);
-    if (stateValue) {
-        return stateValue;
-    } else {
-        logger.warn(
-            `unexpected value for ctx.state.${stateKeyToGet}. The whole ctx.state object: ${util.format(context.state)}`,
-        );
-        return undefined;
-    }
+	const stateAsRecord = (ctx.state as Record<string, T>) || {};
+	const stateValue = caseSensitive
+		? stateAsRecord[stateKey]
+		: caseInsensitiveGetter<Record<string, T>, string, T>(stateAsRecord, stateKey);
+
+	return stateValue ? stateValue : undefined;
+};
+
+export const setStateValue = (ctx: Context, stateKey: string, stateValue: string): Context => {
+	// initialize state if it doesn't already exist
+	if (!ctx.state) ctx.state = {};
+
+	const ctxState = ctx.state as Record<string, unknown>;
+	ctxState[stateKey] = stateValue;
+
+	return ctx;
 };
 
 function caseInsensitiveGetter<T extends Record<K, V>, K extends string | number | symbol, V>(
-    obj: T,
-    key: keyof T,
+	obj: T,
+	key: keyof T,
 ): V | undefined {
-    const makeInsensitive = (someKey: keyof T) => {
-        return typeof someKey === 'string' ? someKey.toLowerCase() : someKey;
-    };
+	const makeInsensitive = (someKey: keyof T) => {
+		return typeof someKey === 'string' ? someKey.toLowerCase() : someKey;
+	};
 
-    // tslint:disable-next-line: no-unnecessary-initializer
-    let valueToReturn: V | undefined = undefined;
-    for (const aKeyOnObj in obj) {
-        if (obj.hasOwnProperty(aKeyOnObj) && makeInsensitive(key) === makeInsensitive(aKeyOnObj)) {
-            valueToReturn = obj[aKeyOnObj];
-        }
-    }
-    return valueToReturn;
+	// tslint:disable-next-line: no-unnecessary-initializer
+	let valueToReturn: V | undefined = undefined;
+	for (const aKeyOnObj in obj) {
+		if (obj.hasOwnProperty(aKeyOnObj) && makeInsensitive(key) === makeInsensitive(aKeyOnObj)) {
+			valueToReturn = obj[aKeyOnObj];
+		}
+	}
+	return valueToReturn;
 }

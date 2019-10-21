@@ -1,27 +1,26 @@
 import Router from 'koa-router';
 import shortId from 'shortid';
-import { getHeaderValue } from './ctxHelpers';
+import { getHeaderValue, setStateValue } from './ctxHelpers';
 import { Context } from 'koa';
 
-export const CORRELATION_ID_HEADER_KEY = 'x-fl-hop-correlationid';
+// defaults
+export const HEADER_KEY = 'x-request-id';
 
-export const insertCorrelationId: Router.IMiddleware = async (ctx, next) => {
-    ctx = addCorrelationIdToCtx(ctx);
-    await next();
-};
-
-export interface IHaveCorrelationId {
-    correlationId: string;
+export interface IRequestIdOptions {
+	headerKey?: string;
 }
 
-export const addCorrelationIdToCtx = <T extends Context>(ctx: T): T & IHaveCorrelationId => {
-    const correlationIdFromConsumer = getHeaderValue(ctx, CORRELATION_ID_HEADER_KEY);
-    const definitelyACorrelationId = correlationIdFromConsumer || shortId.generate();
-    // While it's nice to have pure functions, we're going to add this to the state too to make sure it plays well with existing middleware
-    const ctxStateAsRecord = (ctx.state as Record<string, unknown>) || {};
-    ctxStateAsRecord.correlationId = definitelyACorrelationId;
-    // Now we return the type-safe object so that consumers will have a strongly typed version of the ctx
-    return Object.assign(ctx, {
-        correlationId: definitelyACorrelationId,
-    });
+export const requestId = (options: IRequestIdOptions = {}): Router.IMiddleware => {
+    const { headerKey = HEADER_KEY } = options;
+    
+	return async (ctx, next) => {
+		ctx = addRequestIdToState(ctx, headerKey);
+		await next();
+	};
+};
+
+export const addRequestIdToState = <T extends Context>(ctx: T, headerKey: string): T => {
+	const requestIdValue = getHeaderValue(ctx, headerKey) || shortId.generate();
+    setStateValue(ctx, 'requestId', requestIdValue);
+	return ctx;
 };

@@ -3,7 +3,6 @@ import Boom from '@hapi/boom';
 import { decodeAccessToken, IAccessTokenDecoded } from '../services/idm';
 import { IHaveToken } from './authorization';
 import { IMinimalKoaCtx } from './minimalKoaCtx';
-import { IHaveCorrelationId } from './requestId';
 import { envVars } from '../config/env';
 import { defaultLogger as logger } from '../utils/logger';
 
@@ -19,13 +18,18 @@ const CLIENT_WHITELIST = [
 interface IHaveDecodedToken {
     decodedToken: IAccessTokenDecoded;
 }
-export const evaluateAuthenticatedContext = async <T extends IMinimalKoaCtx & IHaveToken & IHaveCorrelationId>(
+export const evaluateAuthenticatedContext = async <T extends IMinimalKoaCtx & IHaveToken>(
     ctx: T,
 ): Promise<T & IHaveDecodedToken> => {
     // tslint:disable-next-line: no-unsafe-any
     const ctxState = ctx.state || {};
-
+    const correlationId = ctxState.requestId ? ctxState.requestId : '';
     const token = ctxState.accessToken ? ctxState.accessToken : null;
+
+    if (!correlationId || typeof correlationId !== 'string') {
+        throw Boom.badRequest('Correlation Id is missing or not a string!');
+    }
+
     if (!token || typeof token !== 'string') {
         throw Boom.badRequest('No token found!');
     }
@@ -34,7 +38,7 @@ export const evaluateAuthenticatedContext = async <T extends IMinimalKoaCtx & IH
         // use sub aka subject from decoded token
         // --> learn more here: https://www.oauth.com/oauth2-servers/access-tokens/self-encoded-access-tokens/
         // sometimes flid will be null (e.g. when the user is deactivated)
-        const decodedToken = await decodeAccessToken(token, ctx.correlationId);
+        const decodedToken = await decodeAccessToken(token, correlationId);
         if (!isClientAllowed(decodedToken.client_id)) {
             logger.error({ token }, 'ensureAuthenticated error. No sub and not client credential.');
             throw Boom.badRequest('Unauthorized!');
