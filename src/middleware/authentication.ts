@@ -2,7 +2,7 @@ import Boom from '@hapi/boom';
 
 import { decodeAccessToken, IAccessTokenDecoded } from '../services/idm';
 import { IHaveToken } from './authorization';
-import { IMinimalKoaCtx } from './minimalKoaCtx';
+import { IMinimalKoaCtx } from '../helpers/context';
 import { envVars } from '../config/env';
 import { defaultLogger as logger } from '../utils/logger';
 
