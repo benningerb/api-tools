@@ -1,7 +1,6 @@
 import Boom from '@hapi/boom';
 
 import { decodeAccessToken, IAccessTokenDecoded } from '../services/idm';
-import { IHaveToken } from './authorization';
 import { IMinimalKoaCtx } from '../helpers/context';
 import { envVars } from '../config/env';
 import { defaultLogger as logger } from '../utils/logger';
@@ -18,7 +17,7 @@ const CLIENT_WHITELIST = [
 interface IHaveDecodedToken {
     decodedToken: IAccessTokenDecoded;
 }
-export const evaluateAuthenticatedContext = async <T extends IMinimalKoaCtx & IHaveToken>(
+export const evaluateAuthenticatedContext = async <T extends IMinimalKoaCtx>(
     ctx: T,
 ): Promise<T & IHaveDecodedToken> => {
     // tslint:disable-next-line: no-unsafe-any

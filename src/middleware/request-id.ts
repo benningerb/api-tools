@@ -1,7 +1,8 @@
+import { Context } from 'koa';
 import Router from 'koa-router';
 import shortId from 'shortid';
+
 import { getHeaderValue, setStateValue } from '../helpers/context';
-import { Context } from 'koa';
 
 // defaults
 export const HEADER_KEY = 'x-request-id';
