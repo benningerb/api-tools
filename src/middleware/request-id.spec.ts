@@ -1,6 +1,6 @@
 import { Context } from 'koa';
 import shortId from 'shortid';
-import { addRequestIdToState, HEADER_KEY } from './requestId';
+import { addRequestIdToState, HEADER_KEY } from './request-id';
 
 describe('requestId', () => {
 	describe('.addRequestIdToState()', () => {

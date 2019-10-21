@@ -11,16 +11,16 @@ export interface IRequestIdOptions {
 }
 
 export const requestId = (options: IRequestIdOptions = {}): Router.IMiddleware => {
-    const { headerKey = HEADER_KEY } = options;
-    
+	const { headerKey = HEADER_KEY } = options;
+
 	return async (ctx, next) => {
 		ctx = addRequestIdToState(ctx, headerKey);
 		await next();
 	};
 };
 
-export const addRequestIdToState = <T extends Context>(ctx: T, headerKey: string): T => {
+export function addRequestIdToState<T extends Context>(ctx: T, headerKey: string): T {
 	const requestIdValue = getHeaderValue(ctx, headerKey) || shortId.generate();
-    setStateValue(ctx, 'requestId', requestIdValue);
+	setStateValue(ctx, 'requestId', requestIdValue);
 	return ctx;
 };
