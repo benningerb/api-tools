@@ -7,8 +7,9 @@
   "repository": "https://github.com/benningerb/api-tools.git",
   "scripts": {
     "clean": "rimraf dist",
-    "build": "yarn clean && yarn build:parsers && tsc -p . && yarn lint",
+    "build": "yarn clean && yarn build:parsers && tsc -p . && yarn cp:parser && yarn lint",
     "build:parsers": "for f in $(find ./src/lib -type f -name '*.pegjs'); do pegjs --optimize speed --format commonjs -o \"$(dirname $f)/$(basename $f | sed 's/\\.pegjs$//')-parser.js\" $f; done",
+    "cp:parser": "cp ./src/lib/odata-query/odata-parser.js ./dist/lib/odata-query",
     "lint": "tslint \"**/*.ts\" --project .",
     "test": "LOG_LEVEL=debug EXPOSE_STACK=true IDM_CLIENT_ID=mockClientId jest",
     "pretest": "yarn build:parsers",

@@ -42,7 +42,7 @@ export const getStateValue = <T>(
 	return stateValue ? stateValue : undefined;
 };
 
-export const setStateValue = (ctx: Context, stateKey: string, stateValue: string): Context => {
+export const setStateValue = (ctx: Context, stateKey: string, stateValue: any): Context => {
 	// initialize state if it doesn't already exist
 	if (!ctx.state) ctx.state = {};
 
